@@ -27,15 +27,6 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: 근로자용 페이지 주소를 앱에 넣기 (GitHub Pages 주소)
-        run: |
-          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
-          REPO="${GITHUB_REPOSITORY#*/}"
-          if [ "$REPO" = "$OWNER.github.io" ]; then URL="https://$OWNER.github.io/"; else URL="https://$OWNER.github.io/$REPO/"; fi
-          echo "근로자 페이지 주소: $URL"
-          sed -i "s|publicUrl: ''|publicUrl: '$URL'|" app/src/main/assets/index.html
-          grep -o "publicUrl: '[^']*'" app/src/main/assets/index.html
-
       - name: 서명 키 준비
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}

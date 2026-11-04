@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 /** 전자근로계약서 앱: assets/index.html 을 WebView 로 띄우고, 공유·복사·PDF 저장을 안드로이드 기능으로 연결합니다. */
 public class MainActivity extends Activity {
     static final String HOME = "file:///android_asset/index.html";
-    static final Pattern PAYLOAD = Pattern.compile("#(v[12]-[A-Za-z0-9-]{16,}|[a-z0-9]{10})(?![A-Za-z0-9-])");
+    static final Pattern PAYLOAD = Pattern.compile("#(v[12][.-][A-Za-z0-9_-]{16,}|[a-z0-9]{10})(?![A-Za-z0-9_-])");
     WebView web;
 
     @Override
