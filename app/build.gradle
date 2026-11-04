@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.application'
+}
+
+def ksFile = rootProject.file('keystore/release.jks')
+def ksPass = System.getenv('KEYSTORE_PASSWORD') ?: 'samgang-contract'
+
+android {
+    namespace 'com.samgang.contract'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.samgang.contract'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        release {
+            storeFile ksFile
+            storePassword ksPass
+            keyAlias 'contract'
+            keyPassword ksPass
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig ksFile.exists() ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+    }
+}

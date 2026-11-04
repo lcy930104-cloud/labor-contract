@@ -1,0 +1,74 @@
+name: APK 만들기
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ 'docs/**', 'README.md' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 소스 가져오기
+        uses: actions/checkout@v4
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.9'
+
+      - name: 근로자용 페이지 주소를 앱에 넣기 (GitHub Pages 주소)
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [ "$REPO" = "$OWNER.github.io" ]; then URL="https://$OWNER.github.io/"; else URL="https://$OWNER.github.io/$REPO/"; fi
+          echo "근로자 페이지 주소: $URL"
+          sed -i "s|publicUrl: ''|publicUrl: '$URL'|" app/src/main/assets/index.html
+          grep -o "publicUrl: '[^']*'" app/src/main/assets/index.html
+
+      - name: 서명 키 준비
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p keystore
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > keystore/release.jks
+            echo "저장소 비밀값의 서명 키를 사용합니다."
+          else
+            keytool -genkeypair -keystore keystore/release.jks -storetype PKCS12 -alias contract -keyalg RSA -keysize 2048 -validity 10950 \
+              -storepass "${KEYSTORE_PASSWORD:-samgang-contract}" -keypass "${KEYSTORE_PASSWORD:-samgang-contract}" \
+              -dname "CN=Labor Contract, O=Samgang, C=KR"
+            echo "::warning::서명 키 비밀값(KEYSTORE_BASE64)이 없어 임시 키로 서명했습니다. 이 APK 로 기존 설치본을 업데이트하려면 먼저 삭제해야 합니다."
+          fi
+
+      - name: APK 빌드
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: gradle assembleRelease --no-daemon
+
+      - name: 파일 이름 정리
+        run: cp app/build/outputs/apk/release/app-release.apk 근로계약서.apk
+
+      - name: APK 보관 (Actions 결과물)
+        uses: actions/upload-artifact@v4
+        with:
+          name: 근로계약서-apk
+          path: 근로계약서.apk
+
+      - name: 릴리스에 올리기 (다운로드 링크)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: 근로계약서 앱 (빌드 ${{ github.run_number }})
+          body: 아래 근로계약서.apk 를 휴대폰에서 내려받아 설치하세요. 설치 시 "출처를 알 수 없는 앱" 허용이 필요합니다.
+          files: 근로계약서.apk

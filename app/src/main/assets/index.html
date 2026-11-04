@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>전자근로계약서</title>
+<meta name="description" content="근로계약서를 작성해 카카오톡으로 보내고, 근로자가 서명해 회신하는 전자근로계약서">
+<meta name="theme-color" content="#1E3A5F">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap">
+<style>
+/* 전자근로계약서 — 단일 파일. 계약 내용은 서버 없이 링크(#뒤의 값) 안에 담깁니다. */
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --surface-2:#EAEEF2; --fg:#1A222C; --muted:#5F6B78; --line:#D3DAE2;
+  --accent:#1E3A5F; --accent-fg:#FFFFFF; --accent-soft:#E4EBF4;
+  --seal:#B8352B; --ok:#2E7D4F; --ok-soft:#E3F2E8; --warn:#8F6410; --warn-soft:#FBF1DC; --danger:#B3261E; --danger-soft:#FBE7E5;
+  --paper:#FFFFFF; --paper-ink:#141414; --paper-muted:#5A5A5A; --paper-line:#2B2B2B; --paper-faint:#A8A8A8;
+  --font-ui:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --font-doc:'Noto Serif KR','Apple Myungjo','Nanum Myeongjo','Batang',serif;
+  --radius:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#12171D; --surface:#1A2129; --surface-2:#232C36; --fg:#E7ECF1; --muted:#9AA7B4; --line:#303A46;
+    --accent:#8DB2E3; --accent-fg:#0F1A28; --accent-soft:#1F2E42;
+    --seal:#E5736A; --ok:#6CC08B; --ok-soft:#1C3328; --warn:#E2B55D; --warn-soft:#3A2F17; --danger:#F08A82; --danger-soft:#3B1F1D;
+    color-scheme:dark;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.topbar{position:sticky;top:0;z-index:5;background:var(--accent);color:var(--accent-fg)}
+.topbar-in{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-weight:700;letter-spacing:-.01em;text-decoration:none;color:inherit;font-size:16px;line-height:1.2}
+.brand small{display:block;font-weight:400;opacity:.78;font-size:11.5px;letter-spacing:.02em;margin-top:2px}
+.wrap{max-width:760px;margin:0 auto;padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.card h2{margin:0 0 6px;font-size:17px;letter-spacing:-.01em;text-wrap:balance}
+.card h3{margin:14px 0 6px;font-size:14px;color:var(--muted);letter-spacing:.02em}
+.card p{margin:0 0 10px}
+.muted{color:var(--muted);font-size:13.5px}
+.small{font-size:12.5px}
+a{color:var(--accent)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-weight:500;padding:10px 16px;border-radius:8px;cursor:pointer;text-decoration:none;min-height:42px;line-height:1.2}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.sm{padding:6px 10px;min-height:32px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.end{justify-content:flex-end}
+.stack{display:grid;gap:10px}
+.field{display:grid;gap:4px;min-width:0}
+.field label{font-size:13px;color:var(--muted)}
+.field label b{color:var(--danger);font-weight:500}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=tel],input[type=url],select,textarea{width:100%;font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-height:42px}
+textarea{min-height:80px;resize:vertical}
+textarea.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;min-height:110px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:560px){.grid2,.grid3,.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+.chk{display:flex;align-items:flex-start;gap:8px;font-size:14px;cursor:pointer}
+.chk input{margin-top:4px;width:18px;height:18px;flex:none}
+.days{display:flex;flex-wrap:wrap;gap:6px}
+.days label{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13.5px;cursor:pointer}
+.days label:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:500;line-height:1.4;white-space:nowrap}
+.chip.pending{background:var(--warn-soft);color:var(--warn)}
+.chip.signed{background:var(--ok-soft);color:var(--ok)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.notice{border-radius:8px;padding:11px 14px;font-size:14px;border:1px solid var(--line);background:var(--surface-2)}
+.notice.ok{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.notice.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.notice.err{background:var(--danger-soft);border-color:transparent;color:var(--danger)}
+.notice ul{margin:6px 0 0;padding-left:18px}
+.pad{border:1px dashed var(--line);border-radius:8px;background:#fff;position:relative;overflow:hidden}
+.pad canvas{display:block;width:100%;aspect-ratio:3/1;touch-action:none;cursor:crosshair;background:#fff}
+.pad .hint{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:#9a9a9a;pointer-events:none}
+.pad .clear{position:absolute;top:6px;right:6px}
+.pad::after{content:"";position:absolute;left:8%;right:8%;bottom:34%;border-bottom:1px solid #d8d8d8;pointer-events:none}
+.statusbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+.statusbar .info{font-size:13.5px;color:var(--muted);min-width:0}
+.linkbox{display:flex;gap:8px;align-items:stretch}
+.linkbox input{flex:1;min-width:0;font-size:13px}
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.item .t{font-weight:500;color:inherit;text-decoration:none}
+.item .t:hover{text-decoration:underline}
+.item .s{font-size:12.5px;color:var(--muted)}
+.item .r{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.steps{display:grid;gap:8px;margin:0;padding:0;list-style:none;counter-reset:st}
+.steps li{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start;counter-increment:st}
+.steps li::before{content:counter(st);width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13.5px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:calc(100% - 32px)}
+.busy{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:500}
+details summary{cursor:pointer;font-weight:500}
+hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+/* 계약서 본문: 화면과 PDF가 같도록 항상 흰 종이 위에 그립니다 */
+.sheet{background:var(--paper);color:var(--paper-ink);font-family:var(--font-doc);border:1px solid #C9CED4;padding:26px 22px 22px;font-size:13.5px;line-height:1.72;box-shadow:0 1px 2px rgba(0,0,0,.08);min-width:0;overflow-wrap:anywhere}
+.sheet h1{font-size:22px;letter-spacing:.32em;text-indent:.32em;text-align:center;margin:0;font-weight:700}
+.sheet .docno{text-align:center;font-size:11px;color:var(--paper-muted);font-family:var(--font-ui);margin:4px 0 16px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.sheet .intro{margin:0 0 12px}
+.clauses{margin:0;padding:0;list-style:none;display:grid;gap:6px;counter-reset:cl}
+.clauses li{display:grid;grid-template-columns:8.2em 1fr;gap:6px;align-items:start;counter-increment:cl}
+.clauses .ct{font-weight:700}
+.clauses .ct::before{content:counter(cl) ". "}
+.clauses .cb{min-width:0}
+.clauses .cb .sub{display:block}
+@media (max-width:480px){.clauses li{grid-template-columns:1fr;gap:1px}}
+.sheet .sdate{text-align:center;margin:18px 0 10px;letter-spacing:.14em;font-weight:500}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.parties{grid-template-columns:1fr}}
+.party{border-top:1px solid var(--paper-line);padding-top:8px;display:grid;gap:1px;font-size:12.5px;min-width:0}
+.party .pt{font-weight:700;margin-bottom:2px;font-size:13px}
+.sigline{display:flex;align-items:flex-end;gap:10px;margin-top:6px}
+.sigline .who{white-space:nowrap}
+.sigbox{flex:1;min-width:0;max-width:230px;height:66px;border-bottom:1px solid var(--paper-line);display:flex;align-items:flex-end;justify-content:center;position:relative}
+.sigbox svg{height:62px;width:auto;max-width:100%;display:block}
+.sigbox .ph{font-family:var(--font-ui);color:var(--paper-faint);font-size:12px;margin-bottom:8px}
+.erec{margin-top:16px;border-top:1px dashed #9a9a9a;padding-top:8px;font-family:var(--font-ui);font-size:11px;color:var(--paper-muted);display:grid;gap:2px}
+.sheet .chkmark{display:inline-block;width:1.1em;text-align:center;font-family:var(--font-ui)}
+.sheet-print{width:794px;padding:44px 48px 40px;font-size:12.5px;line-height:1.65;border:0;box-shadow:none}
+.sheet-print h1{font-size:24px}
+.sheet-print .clauses li{grid-template-columns:8.2em 1fr}
+.sheet-print .parties{grid-template-columns:1fr 1fr}
+.sheet-print .sigbox{height:70px}
+@media (prefers-reduced-motion:no-preference){.btn{transition:background .15s,filter .15s}}
+@media print{
+  body{background:#fff;padding:0}
+  .topbar,.card,.statusbar,.notice,.toast,.busy{display:none!important}
+  .wrap{max-width:none;padding:0;display:block}
+  .sheet{border:0;box-shadow:none;padding:10mm 8mm;font-size:12.5px}
+  .clauses li{grid-template-columns:8.2em 1fr}
+  .parties{grid-template-columns:1fr 1fr}
+}
+
+.topbar .btn.home{background:transparent;color:var(--accent-fg);border-color:rgba(255,255,255,.45)}
+.topbar .btn.home:hover{background:rgba(255,255,255,.12)}
+.card.install{border-color:var(--accent);background:var(--accent-soft)}
+@media (display-mode: standalone){ .topbar{padding-top:env(safe-area-inset-top,0px)} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+'use strict';
+/* ===== 설정 (파일을 올린 뒤 이 부분만 고치면 됩니다) ===== */
+var CONFIG = {
+  // 카카오톡 채널 1:1 채팅 링크. 채널 관리자센터 > 채널 정보에서 복사 (예: 'https://pf.kakao.com/_abcDef/chat'). 비워 두면 채널 보내기 버튼이 숨겨집니다.
+  channelChatUrl: 'https://pf.kakao.com/_ecByG/chat',
+  channelName: '세무회계삼강',
+  // 카카오 디벨로퍼스(developers.kakao.com) 앱의 JavaScript 키 (선택). 넣고 '플랫폼 > Web'에 이 파일을 올린 도메인을 등록하면,
+  // "카카오톡으로 보내기"가 카카오톡 공유 창(친구/채팅방 선택)으로 바로 열립니다. 비워 두면 휴대폰 공유 메뉴 또는 링크 복사로 동작합니다.
+  kakaoJsKey: '',
+  // [짧은 링크 모드] Firebase 프로젝트의 웹 API 키와 프로젝트 ID (선택). 둘 다 채우면 계약 내용이 Firestore에 저장되고
+  // 링크가 '…#k7f3x2abcd' 처럼 짧아지며, 근로자가 서명하면 사업주가 같은 링크를 다시 열기만 해도 서명 완료로 보입니다.
+  // 비워 두면 서버 없이 계약 내용을 링크 안에 담아 보냅니다(링크가 깁니다). 설정 방법은 이 파일과 함께 받은 안내를 참고하세요.
+  firebase: { apiKey: '', projectId: '' },
+  // 근로자가 여는 웹페이지 주소. 비워 두면 지금 열려 있는 이 페이지의 주소를 씁니다(홈페이지에 올린 경우).
+  // 앱(APK)에서는 반드시 채워야 합니다: 근로자는 앱이 없으므로 인터넷에 있는 페이지로 링크를 보냅니다.
+  publicUrl: '',
+  // PDF·압축 라이브러리 위치. 비워 두면 인터넷(cdnjs)에서 받고, './lib/' 로 두면 같이 넣어 둔 파일을 씁니다(앱 전용).
+  libBase: './lib/'
+};
+/* ========================================================= */
+
+var MIN_WAGE = {year:2026, hourly:10320};
+var ID_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
+var DAY_NAMES = ['월','화','수','목','금','토','일'];
+var P_ZIP = 'v2-', P_PLAIN = 'v1-'; // 링크에는 글자·숫자·하이픈만 씁니다 (어떤 사이트에 올려도 # 뒤가 잘리지 않도록)
+var LS_KEY = 'ngk:list';
+var SIG_W = 300, SIG_H = 100;
+var app = document.getElementById('app');
+var NATIVE = (window.Android && typeof window.Android.share === 'function') ? window.Android : null; // 안드로이드 앱 안에서 열렸을 때
+var flash = null;
+var activePad = null;
+var lastRoute = null;
+var renderSeq = 0;
+
+/* ---------- helpers ---------- */
+var ss = {
+  get: function(k){ try { var v = sessionStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  set: function(k,v){ try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del: function(k){ try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+var ls = {
+  get: function(k){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  set: function(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function $(sel, root){ return (root || document).querySelector(sel); }
+function $$(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function pad2(n){ return (n < 10 ? '0' : '') + n; }
+function todayISO(){ var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); }
+function fmtDate(iso){ if (!iso) return ''; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso); if (!m) return iso; return m[1] + '년 ' + parseInt(m[2],10) + '월 ' + parseInt(m[3],10) + '일'; }
+function fmtDT(ts){ if (!ts) return ''; var d = new Date(ts); return d.getFullYear() + '. ' + (d.getMonth()+1) + '. ' + d.getDate() + '. ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function fmtWon(n){ n = Number(n); if (!isFinite(n)) return ''; return n.toLocaleString('ko-KR') + '원'; }
+function genId(){ var a = new Uint8Array(10); window.crypto.getRandomValues(a); var s = ''; for (var i = 0; i < 10; i++) s += ID_ALPHABET[a[i] % ID_ALPHABET.length]; return s; }
+function isShortId(h){ return /^[a-z0-9]{10}$/.test(h); }
+function toast(msg, ms){ var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, ms || 2600); }
+var busyEl = null;
+function setBusy(on, msg){ if (busyEl) { busyEl.remove(); busyEl = null; } if (on) { busyEl = document.createElement('div'); busyEl.className = 'busy'; busyEl.textContent = msg || '처리 중…'; document.body.appendChild(busyEl); } }
+function copyText(text, el){
+  if (NATIVE) { try { NATIVE.copy(text); return Promise.resolve(true); } catch (e) {} }
+  return new Promise(function(res){
+    function fallback(){ try { if (el) { el.focus(); el.select(); if (document.execCommand('copy')) return res(true); } var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); ta.remove(); res(!!ok); } catch (e) { res(false); } }
+    try { navigator.clipboard.writeText(text).then(function(){ res(true); }, fallback); } catch (e) { fallback(); }
+  });
+}
+function publicUrl(){ var u = CONFIG.publicUrl || ls.get('ngk:publicUrl') || ''; return u ? String(u).replace(/#.*$/, '') : ''; }
+function baseURL(){ return publicUrl() || location.href.split('#')[0]; }
+function isFileURL(){ return !NATIVE && !publicUrl() && location.protocol === 'file:'; }
+function isMobile(){ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
+var LIB_FILES = {'pako/2.1.0/pako.min.js':'pako.min.js', 'html2canvas/1.4.1/html2canvas.min.js':'html2canvas.min.js', 'jspdf/2.5.1/jspdf.umd.min.js':'jspdf.umd.min.js'};
+function loadScript(src){ return new Promise(function(res, rej){ var s = document.createElement('script'); if (CONFIG.libBase) { Object.keys(LIB_FILES).forEach(function(k){ if (src.indexOf(k) >= 0) src = CONFIG.libBase + LIB_FILES[k]; }); } s.src = src; s.onload = res; s.onerror = function(){ rej(new Error('스크립트를 불러오지 못했습니다 (인터넷 연결 확인)')); }; document.body.appendChild(s); }); }
+
+/* ---------- 링크 안에 담기는 계약 내용: JSON → deflate 압축 → base64url ---------- */
+var te = new TextEncoder(), td = new TextDecoder();
+function b64url(u8){ var s = ''; for (var i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function unb64url(s){ s = s.replace(/-/g,'+').replace(/_/g,'/'); while (s.length % 4) s += '='; var bin = atob(s); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+function pipeBytes(u8, Ctor, fmt){ var st = new Ctor(fmt); var w = st.writable.getWriter(); w.write(u8); w.close(); return new Response(st.readable).arrayBuffer().then(function(b){ return new Uint8Array(b); }); }
+function pakoReady(){ return window.pako ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js'); }
+function deflate(u8){ if (window.CompressionStream) { try { return pipeBytes(u8, window.CompressionStream, 'deflate'); } catch (e) {} } return pakoReady().then(function(){ return window.pako.deflate(u8); }); }
+function inflate(u8){ if (window.DecompressionStream) { try { return pipeBytes(u8, window.DecompressionStream, 'deflate'); } catch (e) {} } return pakoReady().then(function(){ return window.pako.inflate(u8); }); }
+function esc64(s){ return s.replace(/[-_]/g, function(c){ return c === '-' ? '-1' : '-0'; }); }
+function unesc64(s){ return s.replace(/-([01])/g, function(_, d){ return d === '1' ? '-' : '_'; }); }
+function encodePayload(obj){
+  var bytes = te.encode(JSON.stringify(obj));
+  return deflate(bytes).then(function(z){ return P_ZIP + esc64(b64url(z)); }, function(){ return P_PLAIN + esc64(b64url(bytes)); });
+}
+function payloadOf(str){
+  var s = String(str || '').trim();
+  var at = s.indexOf('#'); if (at >= 0) s = s.slice(at + 1);
+  if (s.indexOf(P_ZIP) !== 0 && s.indexOf(P_PLAIN) !== 0) return null;
+  return s.slice(0, 3) + s.slice(3).replace(/[^A-Za-z0-9-]/g, '');
+}
+function decodePayload(str){
+  var p = payloadOf(str); if (!p) return Promise.resolve(null);
+  var body = unesc64(p.slice(3)), bytesP;
+  try { bytesP = p.indexOf(P_ZIP) === 0 ? inflate(unb64url(body)) : Promise.resolve(unb64url(body)); } catch (e) { return Promise.resolve(null); }
+  return bytesP.then(function(bytes){ var o = JSON.parse(td.decode(bytes)); if (!o || typeof o !== 'object' || !o.co) return null; return o; }).catch(function(){ return null; });
+}
+function linkOf(payload){ return baseURL() + '#' + payload; }
+
+/* ---------- 짧은 링크 모드: Firestore REST ---------- */
+function serverOn(){ return !!(CONFIG.firebase && CONFIG.firebase.apiKey && CONFIG.firebase.projectId); }
+function fsUrl(id, qs){ return 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(CONFIG.firebase.projectId) + '/databases/(default)/documents/contracts' + (id ? '/' + id : '') + '?key=' + encodeURIComponent(CONFIG.firebase.apiKey) + (qs || ''); }
+function fsCheck(r){ if (r.ok) return r.json(); return r.json().catch(function(){ return {}; }).then(function(j){ var e = new Error((j.error && j.error.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; }); }
+function fsCreate(id, c){
+  return fetch(fsUrl('', '&documentId=' + id), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fields:{data:{stringValue:JSON.stringify(c)}, status:{stringValue:'pending'}, createdAt:{integerValue:String(c.createdAt)}}})}).then(fsCheck);
+}
+function fsGet(id){
+  return fetch(fsUrl(id)).then(function(r){
+    if (r.status === 404) return null;
+    return fsCheck(r).then(function(j){
+      var f = j.fields || {}; if (!f.data || !f.data.stringValue) return null;
+      var c = JSON.parse(f.data.stringValue);
+      if (f.status && f.status.stringValue === 'signed' && f.sig && f.sig.stringValue) { var s = JSON.parse(f.sig.stringValue); c.ws = s.ws; c.wsName = s.n; c.wsAt = s.t; }
+      return c;
+    });
+  });
+}
+function fsSign(id, sig){
+  return fetch(fsUrl(id, '&updateMask.fieldPaths=status&updateMask.fieldPaths=sig&updateMask.fieldPaths=signedAt'), {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fields:{status:{stringValue:'signed'}, sig:{stringValue:JSON.stringify(sig)}, signedAt:{integerValue:String(sig.t)}}})}).then(fsCheck);
+}
+function fsStatus(id){
+  return fetch(fsUrl(id)).then(function(r){ if (!r.ok) return null; return r.json().then(function(j){ var f = j.fields || {}; return {status: f.status ? f.status.stringValue : 'pending', signedAt: f.signedAt ? Number(f.signedAt.integerValue) : null}; }); }).catch(function(){ return null; });
+}
+function fsError(e){
+  if (e && e.status === 403) return '서버가 요청을 거부했습니다. Firestore 보안 규칙이 안내대로 설정되어 있는지 확인해 주세요.';
+  if (e && e.status === 409) return '같은 번호의 계약서가 이미 있습니다. 다시 시도해 주세요.';
+  if (e && e.status === 404) return '계약서를 찾을 수 없습니다.';
+  return '서버에 연결하지 못했습니다' + (e && e.message ? ' (' + e.message + ')' : '') + '. 인터넷 연결을 확인해 주세요.';
+}
+
+/* ---------- 서명 획 ---------- */
+function distSq(p, a, b){ var dx = b[0]-a[0], dy = b[1]-a[1]; var l2 = dx*dx + dy*dy; var t = 0; if (l2) { t = ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / l2; t = Math.max(0, Math.min(1, t)); } var x = a[0] + t*dx, y = a[1] + t*dy; return (p[0]-x)*(p[0]-x) + (p[1]-y)*(p[1]-y); }
+function simplify(pts, eps){
+  if (pts.length < 3) return pts;
+  var sq = eps*eps, keep = new Array(pts.length), stack = [[0, pts.length-1]], i;
+  for (i = 0; i < keep.length; i++) keep[i] = false;
+  keep[0] = keep[pts.length-1] = true;
+  while (stack.length) {
+    var seg = stack.pop(), a = seg[0], b = seg[1], max = 0, idx = -1;
+    for (i = a+1; i < b; i++) { var d = distSq(pts[i], pts[a], pts[b]); if (d > max) { max = d; idx = i; } }
+    if (max > sq && idx > 0) { keep[idx] = true; stack.push([a, idx], [idx, b]); }
+  }
+  return pts.filter(function(p, j){ return keep[j]; });
+}
+function encStrokes(strokes){
+  return (strokes || []).map(function(st){ var out = [], px = 0, py = 0; st.forEach(function(p, i){ out.push(i ? p[0]-px : p[0], i ? p[1]-py : p[1]); px = p[0]; py = p[1]; }); return out.join(','); }).join('|');
+}
+function decStrokes(s){
+  if (!s) return [];
+  return s.split('|').map(function(st){ var n = st.split(',').map(Number), pts = [], x = 0, y = 0; for (var i = 0; i + 1 < n.length; i += 2) { x += n[i]; y += n[i+1]; pts.push([x, y]); } return pts; }).filter(function(st){ return st.length; });
+}
+function sigSVG(encoded){
+  var strokes = decStrokes(encoded);
+  if (!strokes.length) return '';
+  var d = strokes.map(function(st){ if (st.length === 1) return 'M' + st[0][0] + ' ' + st[0][1] + 'l0.1 0'; return 'M' + st.map(function(p){ return p[0] + ' ' + p[1]; }).join('L'); }).join('');
+  return '<svg viewBox="0 0 ' + SIG_W + ' ' + SIG_H + '" aria-label="서명" role="img"><path d="' + d + '" fill="none" stroke="#141414" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function createPad(canvas, onChange){
+  var W = SIG_W, H = SIG_H, ctx = canvas.getContext('2d'), strokes = [], cur = null;
+  function resize(){ var r = canvas.getBoundingClientRect(); var dpr = window.devicePixelRatio || 1; var w = Math.max(1, Math.round(r.width * dpr)); canvas.width = w; canvas.height = Math.round(w * H / W); draw(); }
+  function toLogical(e){ var r = canvas.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; }
+  function draw(){
+    var s = canvas.width / W;
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.setTransform(s,0,0,s,0,0);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 1.4; ctx.strokeStyle = '#141414'; ctx.fillStyle = '#141414';
+    var all = cur ? strokes.concat([cur]) : strokes;
+    all.forEach(function(st){
+      if (st.length === 1) { ctx.beginPath(); ctx.arc(st[0][0], st[0][1], 0.7, 0, Math.PI*2); ctx.fill(); return; }
+      ctx.beginPath(); ctx.moveTo(st[0][0], st[0][1]); for (var i = 1; i < st.length; i++) ctx.lineTo(st[i][0], st[i][1]); ctx.stroke();
+    });
+    var hint = canvas.parentNode && canvas.parentNode.querySelector('.hint');
+    if (hint) hint.hidden = all.length > 0;
+  }
+  function end(){ if (!cur) return; strokes.push(simplify(cur, 0.6)); cur = null; draw(); if (onChange) onChange(); }
+  canvas.addEventListener('pointerdown', function(e){ e.preventDefault(); try { canvas.setPointerCapture(e.pointerId); } catch (x) {} cur = [toLogical(e)]; draw(); });
+  canvas.addEventListener('pointermove', function(e){ if (!cur) return; e.preventDefault(); var p = toLogical(e), l = cur[cur.length-1]; if (Math.abs(p[0]-l[0]) + Math.abs(p[1]-l[1]) < 1) return; cur.push(p); draw(); });
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointercancel', end);
+  window.addEventListener('resize', resize);
+  resize();
+  return {
+    get: function(){ return strokes.map(function(st){ return st.map(function(p){ return p.slice(); }); }); },
+    set: function(s){ strokes = s || []; draw(); },
+    clear: function(){ strokes = []; draw(); if (onChange) onChange(); },
+    isEmpty: function(){ return strokes.length === 0; },
+    destroy: function(){ window.removeEventListener('resize', resize); }
+  };
+}
+function mountPad(container, initial, onChange){
+  container.innerHTML = '<canvas tabindex="0" aria-label="서명란"></canvas><span class="hint">여기에 서명해 주세요</span><button type="button" class="btn sm clear">지우기</button>';
+  var pad = createPad($('canvas', container), onChange);
+  if (initial && initial.length) pad.set(initial);
+  $('.clear', container).addEventListener('click', function(){ pad.clear(); });
+  return pad;
+}
+
+/* ---------- 이 기기의 발행 목록 (localStorage) ---------- */
+function listGet(){ return ls.get(LS_KEY) || []; }
+function listUpsert(entry){
+  var list = listGet(), found = false;
+  list = list.map(function(e){ if (e.id === entry.id) { found = true; return Object.assign({}, e, entry); } return e; });
+  if (!found) list.unshift(entry);
+  ls.set(LS_KEY, list.slice(0, 500));
+}
+function listRemove(id){ ls.set(LS_KEY, listGet().filter(function(e){ return e.id !== id; })); }
+
+/* ---------- 카카오톡 보내기 ---------- */
+function kakaoPreload(){
+  if (!CONFIG.kakaoJsKey) return;
+  loadScript('https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js').then(function(){ try { if (window.Kakao && !window.Kakao.isInitialized()) window.Kakao.init(CONFIG.kakaoJsKey); } catch (e) {} }).catch(function(){});
+}
+function kakaoOK(){ try { return !!(CONFIG.kakaoJsKey && window.Kakao && window.Kakao.isInitialized() && window.Kakao.Share); } catch (e) { return false; } }
+// 클릭 핸들러 안에서 동기적으로 호출해야 합니다 (휴대폰 공유 메뉴는 사용자 동작 직후에만 열립니다)
+function shareLink(link, title, text, inputEl){
+  if (deadLink()) return;
+  if (NATIVE) { NATIVE.share(title, text + '\n' + link); return; }
+  if (kakaoOK()) {
+    try { window.Kakao.Share.sendDefault({objectType:'text', text:text, link:{mobileWebUrl:link, webUrl:link}, buttonTitle:'계약서 열기'}); return; } catch (e) {}
+  }
+  if (navigator.share && isMobile()) {
+    navigator.share({title:title, text:text, url:link}).catch(function(e){ if (e && e.name !== 'AbortError') copyFallback(); });
+    return;
+  }
+  copyFallback();
+  function copyFallback(){ copyText(link, inputEl).then(function(ok){ toast(ok ? '링크를 복사했습니다. 카카오톡 대화창에 붙여넣어 보내세요.' : '복사가 되지 않았습니다. 링크 칸을 길게 눌러 직접 복사해 주세요.', 3500); }); }
+}
+function sendToChannel(link, inputEl){
+  if (deadLink()) return;
+  if (NATIVE) { NATIVE.copy(link); toast('링크를 복사했습니다. ' + CONFIG.channelName + ' 채팅창에 붙여넣어 보내 주세요.', 3500); NATIVE.openUrl(CONFIG.channelChatUrl); return; }
+  var w = null;
+  try { w = window.open(CONFIG.channelChatUrl, '_blank'); } catch (e) {}
+  copyText(link, inputEl).then(function(ok){
+    toast(ok ? '링크를 복사했습니다. ' + CONFIG.channelName + ' 채팅창에 붙여넣어 보내 주세요.' : CONFIG.channelName + ' 채팅창을 열었습니다. 링크를 복사해 붙여넣어 주세요.', 4000);
+    if (!w) toast('채팅창이 열리지 않으면 팝업 허용 후 다시 눌러 주세요.', 4000);
+  });
+}
+
+/* ---------- 계약서 본문 ---------- */
+function daysText(days){ var on = []; (days || []).forEach(function(v, i){ if (v) on.push(DAY_NAMES[i]); }); return on.length ? '매주 ' + on.join('·') + '요일 (주 ' + on.length + '일)' : '(근무일 미기재)'; }
+function payLabel(t){ return t === 'hour' ? '시간급' : t === 'day' ? '일급' : '월급'; }
+function chk(on){ return '<span class="chkmark">' + (on ? '☑' : '☐') + '</span>'; }
+function renderSheet(c, opt){
+  opt = opt || {};
+  var period = c.fixed ? fmtDate(c.start) + '부터 ' + fmtDate(c.end) + '까지' : fmtDate(c.start) + '부터 (기간의 정함이 없음)';
+  var prob = c.prob ? '<span class="sub">수습기간: 근로개시일부터 ' + esc(c.prob.m) + '개월' + (c.prob.p ? ' (수습기간 중 임금은 소정임금의 ' + esc(c.prob.p) + '%)' : '') + '</span>' : '';
+  var hours = esc(c.t1) + '부터 ' + esc(c.t2) + '까지' + (c.b1 && c.b2 ? ' <span class="sub">(휴게시간: ' + esc(c.b1) + ' ~ ' + esc(c.b2) + ')</span>' : '');
+  var pay = payLabel(c.payType) + ' ' + fmtWon(c.pay)
+    + '<span class="sub">상여금: ' + (c.bonus ? '있음 (' + esc(c.bonus) + ')' : '없음') + '</span>'
+    + '<span class="sub">기타급여(제수당 등): ' + (c.extra ? '있음 (' + esc(c.extra) + ')' : '없음') + '</span>'
+    + '<span class="sub">임금지급일: ' + esc(c.payday) + ' (휴일의 경우는 전일 지급)</span>'
+    + '<span class="sub">지급방법: ' + (c.payMethod === 'cash' ? '근로자에게 직접 지급' : '근로자 명의 예금통장에 입금') + '</span>';
+  var ins = c.ins || {};
+  var insText = chk(ins.go) + ' 고용보험 ' + chk(ins.san) + ' 산재보험 ' + chk(ins.kuk) + ' 국민연금 ' + chk(ins.gun) + ' 건강보험';
+  var etc = c.etc ? '<li><span class="ct">특약사항</span><span class="cb">' + esc(c.etc).replace(/\n/g, '<br>') + '</span></li>' : '';
+  var esig = c.es ? sigSVG(c.es) : '<span class="ph">(서명 또는 인)</span>';
+  var wsig = c.ws ? sigSVG(c.ws) : '<span class="ph">(서명)</span>';
+  return '<article class="sheet' + (opt.print ? ' sheet-print' : '') + '" id="' + (opt.id || 'sheet') + '">'
+    + '<h1>표준근로계약서</h1>'
+    + '<div class="docno">문서번호 ' + esc(c.id ? c.id.toUpperCase() : '— 발행 전 —') + '</div>'
+    + '<p class="intro"><b>' + esc(c.co || '(사업체명)') + '</b>(이하 "사업주"라 함)과(와) <b>' + esc(c.wn || '(근로자 성명)') + '</b>(이하 "근로자"라 함)은 다음과 같이 근로계약을 체결한다.</p>'
+    + '<ol class="clauses">'
+    + '<li><span class="ct">근로계약기간</span><span class="cb">' + period + prob + '</span></li>'
+    + '<li><span class="ct">근무장소</span><span class="cb">' + esc(c.place) + '</span></li>'
+    + '<li><span class="ct">업무의 내용</span><span class="cb">' + esc(c.job) + '</span></li>'
+    + '<li><span class="ct">소정근로시간</span><span class="cb">' + hours + '</span></li>'
+    + '<li><span class="ct">근무일/휴일</span><span class="cb">' + esc(daysText(c.days)) + ' 근무, 주휴일 매주 ' + esc(c.off || '일') + '요일</span></li>'
+    + '<li><span class="ct">임금</span><span class="cb">' + pay + '</span></li>'
+    + '<li><span class="ct">연차유급휴가</span><span class="cb">연차유급휴가는 근로기준법에서 정하는 바에 따라 부여함</span></li>'
+    + '<li><span class="ct">사회보험 적용</span><span class="cb">' + insText + '</span></li>'
+    + '<li><span class="ct">근로계약서 교부</span><span class="cb">사업주는 근로계약을 체결함과 동시에 본 계약서를 사본하여 근로자의 교부요구와 관계없이 근로자에게 교부함 (근로기준법 제17조 이행)</span></li>'
+    + '<li><span class="ct">성실한 이행의무</span><span class="cb">사업주와 근로자는 각자가 근로계약, 취업규칙, 단체협약을 지키고 성실하게 이행하여야 함</span></li>'
+    + '<li><span class="ct">기타</span><span class="cb">이 계약에 정함이 없는 사항은 근로기준법령에 의함</span></li>'
+    + etc
+    + '</ol>'
+    + '<div class="sdate">' + esc(fmtDate(c.date)) + '</div>'
+    + '<div class="parties">'
+    + '<div class="party"><div class="pt">(사업주)</div><div>사업체명: ' + esc(c.co) + (c.tel ? ' (전화: ' + esc(c.tel) + ')' : '') + '</div><div>주소: ' + esc(c.addr) + '</div><div class="sigline"><span class="who">대표자: ' + esc(c.rep) + '</span><span class="sigbox">' + esig + '</span></div></div>'
+    + '<div class="party"><div class="pt">(근로자)</div><div>주소: ' + esc(c.waddr) + '</div><div>연락처: ' + esc(c.wtel) + '</div><div class="sigline"><span class="who">성명: ' + esc(c.wsName || c.wn) + '</span><span class="sigbox">' + wsig + '</span></div></div>'
+    + '</div>'
+    + '<div class="erec">'
+    + '<div>전자서명 기록 · 사업주 발행: ' + (c.createdAt ? esc(fmtDT(c.createdAt)) : '발행 전') + (c.es ? ' (사업주 서명 포함)' : '') + '</div>'
+    + '<div>근로자 서명: ' + (c.ws ? esc(fmtDT(c.wsAt)) + ' · ' + esc(c.wsName || c.wn) : '서명 대기') + '</div>'
+    + '<div>본 계약서는 전자문서로 작성·서명되었으며, 문서번호로 식별됩니다. 근로기준법 제17조에 따라 사업주는 근로자에게 사본을 교부합니다.</div>'
+    + '</div>'
+    + '</article>';
+}
+
+/* ---------- 공통 틀 ---------- */
+function shell(inner, status){
+  var h = location.hash.replace(/^#/, '');
+  var home = h ? '<a class="btn sm home" href="#">처음으로</a>' : '';
+  return '<header class="topbar"><div class="topbar-in"><a class="brand" href="#">전자근로계약서<small>작성 · 카카오톡 전송 · 서명</small></a><span class="row">' + (status || '') + home + '</span></div></header><main class="wrap">' + inner + '</main>';
+}
+function takeFlash(){ if (!flash) return ''; var f = flash; flash = null; return '<div class="notice ' + (f.kind || '') + '">' + f.html + '</div>'; }
+function fileWarn(){ return isFileURL() ? '<div class="notice err"><b>아직 인터넷에 올리지 않은 파일을 컴퓨터에서 직접 연 상태입니다.</b> 지금 만드는 링크는 <code>file:///…</code>로 시작해서 근로자 휴대폰에서는 열리지 않습니다(눌러도 아무것도 뜨지 않음). 이 파일을 홈페이지나 무료 호스팅(Netlify, GitHub Pages 등)에 올린 뒤 <b>https://…</b> 주소로 접속해서 쓰세요. 입력·미리보기·PDF 저장 연습은 지금도 됩니다.</div>' : ''; }
+function deadLink(){ if (!isFileURL()) return false; toast('이 링크는 다른 사람이 열 수 없습니다 (컴퓨터 파일 주소). 파일을 인터넷에 올린 뒤 그 주소에서 다시 만들어 주세요.', 5000); return true; }
+function channelCard(link, c, signed){
+  if (!CONFIG.channelChatUrl) return '';
+  return '<section class="card"><h2>' + esc(CONFIG.channelName) + ' 채널로 보내기</h2><p class="muted">누르면 링크가 복사되고 ' + esc(CONFIG.channelName) + ' 카카오톡 채팅창이 열립니다. 채팅창에 붙여넣어 보내 주세요.' + (signed ? ' PDF 파일로 보내려면 "PDF 보내기"에서 공유 대상으로 채널 채팅을 고르면 됩니다.' : '') + '</p>'
+    + '<div class="row"><button class="btn primary" id="ch-link" type="button">링크 복사하고 채팅창 열기</button>' + (signed ? '<button class="btn" id="ch-pdf" type="button">PDF 보내기</button>' : '') + '</div></section>';
+}
+
+/* ---------- 첫 화면 ---------- */
+function viewHome(){
+  var html = takeFlash() + fileWarn() + installCard();
+  html += '<section class="card"><h2>새 근로계약서</h2><p class="muted">계약 내용을 입력해 링크를 만들고 근로자에게 카카오톡으로 보내면, 근로자는 앱 설치나 로그인 없이 링크를 열어 내용을 확인하고 서명합니다. 서버에 저장되는 것은 없고, 계약 내용은 링크 안에 담깁니다.</p>'
+    + '<ol class="steps"><li><span>계약 내용을 입력하고 <b>링크 만들기</b>를 누릅니다.</span></li><li><span>링크를 근로자에게 카카오톡으로 보냅니다.</span></li><li><span>근로자가 서명하면 <b>서명 완료 링크</b>와 <b>PDF</b>가 만들어집니다. 근로자가 그중 하나(또는 둘 다)를 카카오톡으로 회신합니다.</span></li><li><span>서명 완료 링크를 열면 양쪽 서명이 들어간 계약서가 보이고, PDF로 저장해 보관·교부할 수 있습니다.</span></li></ol>'
+    + '<div class="row" style="margin-top:12px"><a class="btn primary" href="#new">새 계약서 작성</a></div></section>';
+  html += '<section class="card"><h2>받은 링크 열기</h2><p class="muted">근로자가 회신한 서명 완료 링크(또는 전에 만든 링크)를 붙여넣으면 바로 엽니다.</p><div class="linkbox"><input type="url" id="open-in" placeholder="https://… 또는 v2-…"><button class="btn" id="open-go" type="button">열기</button></div><div id="open-msg" style="margin-top:8px"></div></section>';
+  var list = listGet();
+  html += '<section class="card"><h2>이 기기에서 만든 계약서</h2><p class="muted small">이 브라우저에만 기록됩니다. 다른 기기에서는 보이지 않으니 링크는 카카오톡 대화에도 남겨 두세요.</p><div class="list" id="list">'
+    + (list.length ? list.map(function(r){
+        var st = r.status === 'signed' ? '<span class="chip signed">서명 완료</span>' : '<span class="chip pending">서명 대기</span>';
+        var openHref = r.p ? '#' + r.p : r.link;
+        return '<div class="item" data-id="' + esc(r.id) + '"><div><a class="t" href="' + esc(openHref) + '">' + esc(r.worker || '(성명 없음)') + '</a> <span class="muted small">· ' + esc(r.company || '') + '</span><div class="s">근로개시 ' + esc(fmtDate(r.start)) + ' · 발행 ' + esc(fmtDT(r.createdAt)) + (r.signedAt ? ' · 서명 ' + esc(fmtDT(r.signedAt)) : '') + '</div></div><div class="r">' + st + '<button class="btn sm" type="button" data-copy="' + esc(r.link) + '">링크 복사</button><button class="btn sm danger" type="button" data-del="' + esc(r.id) + '">삭제</button></div></div>';
+      }).join('') : '<div class="muted">아직 만든 계약서가 없습니다.</div>')
+    + '</div></section>';
+  if (NATIVE) {
+    var pu = publicUrl();
+    html += '<section class="card' + (pu ? '' : ' install') + '" id="pu-card"><h2>근로자용 페이지 주소</h2><p class="muted small">근로자는 앱이 없으므로, 인터넷에 올려 둔 계약서 페이지(예: https://아이디.github.io/labor-contract/)로 링크를 보냅니다. 처음 한 번만 설정하면 됩니다.' + (pu ? '' : ' <b>아직 설정되지 않아 링크를 만들 수 없습니다.</b>') + '</p><div class="linkbox"><input type="url" id="pu-in" placeholder="https://…" value="' + esc(ls.get('ngk:publicUrl') || CONFIG.publicUrl || '') + '"' + (CONFIG.publicUrl ? ' disabled' : '') + '><button class="btn primary" id="pu-save" type="button"' + (CONFIG.publicUrl ? ' disabled' : '') + '>저장</button></div>' + (CONFIG.publicUrl ? '<p class="muted small" style="margin-top:6px">앱을 만들 때 넣어 둔 주소입니다.</p>' : '') + '</section>';
+  }
+  if (NATIVE) html += '<section class="card"><h2>이 앱 사용 팁</h2><p class="muted small">근로자가 카카오톡으로 보낸 서명 완료 링크는 그 메시지를 길게 눌러 <b>공유 → 근로계약서</b>를 고르면 바로 열립니다. 복사해서 위 "받은 링크 열기"에 붙여넣어도 됩니다.</p></section>';
+  app.innerHTML = shell(html);
+  wireInstall();
+  var pus = $('#pu-save'); if (pus) pus.addEventListener('click', function(){ var v = $('#pu-in').value.trim(); if (v && !/^https:\/\//.test(v)) { toast('https:// 로 시작하는 주소를 입력해 주세요.'); return; } ls.set('ngk:publicUrl', v); toast(v ? '저장했습니다.' : '주소를 지웠습니다.'); viewHome(); });
+  $('#open-go').addEventListener('click', function(){
+    var v = $('#open-in').value.trim(), p = payloadOf(v);
+    if (!p) { var tail = v.split('#').pop(); if (isShortId(tail)) p = tail; }
+    if (!p) { $('#open-msg').innerHTML = '<div class="notice err">계약서 링크가 아닙니다. 링크 전체를 붙여넣어 주세요.</div>'; return; }
+    location.hash = p;
+  });
+  $$('[data-copy]').forEach(function(b){ b.addEventListener('click', function(){ if (deadLink()) return; copyText(b.getAttribute('data-copy')).then(function(ok){ toast(ok ? '링크를 복사했습니다' : '복사에 실패했습니다. 계약서를 열어 직접 복사해 주세요.'); }); }); });
+  $$('[data-del]').forEach(function(b){ b.addEventListener('click', function(){ var id = b.getAttribute('data-del'); if (b.textContent === '삭제') { b.textContent = '정말 삭제'; setTimeout(function(){ b.textContent = '삭제'; }, 3000); return; } listRemove(id); viewHome(); toast('이 기기의 목록에서 지웠습니다. 링크 자체는 계속 열립니다.'); }); });
+  if (serverOn()) {
+    var seq = renderSeq;
+    list.filter(function(r){ return r.status !== 'signed' && isShortId(r.id); }).slice(0, 30).forEach(function(r){
+      fsStatus(r.id).then(function(st){
+        if (!st || st.status !== 'signed' || seq !== renderSeq) return;
+        listUpsert({id:r.id, status:'signed', signedAt:st.signedAt});
+        var row = $('.item[data-id="' + r.id + '"] .chip'); if (row) { row.className = 'chip signed'; row.textContent = '서명 완료'; }
+      });
+    });
+  }
+}
+
+/* ---------- 작성 화면 ---------- */
+function fieldHTML(id, label, type, extra, req){
+  return '<div class="field"><label for="' + id + '">' + label + (req ? ' <b>*</b>' : '') + '</label><input type="' + (type || 'text') + '" id="' + id + '" ' + (extra || '') + '></div>';
+}
+function viewNew(){
+  if (activePad) { activePad.destroy(); activePad = null; }
+  var d = ss.get('ngk:draft') || {};
+  var days = d.days || [1,1,1,1,1,0,0];
+  var ins = d.ins || {go:true, san:true, kuk:true, gun:true};
+  var v = function(k, def){ return esc(d[k] != null ? d[k] : (def == null ? '' : def)); };
+  var html = takeFlash() + fileWarn();
+  html += '<section class="card"><h2>근로계약서 작성</h2><p class="muted">고용노동부 표준근로계약서 항목을 기준으로 합니다. <b>*</b> 표시는 필수입니다. 입력 내용은 이 기기에 임시 저장됩니다.</p>'
+  + '<form id="f" class="stack" autocomplete="off">'
+  + '<h3>사업장</h3><div class="grid2">' + fieldHTML('f-co', '사업체명', 'text', 'value="' + v('co') + '"', true) + fieldHTML('f-rep', '대표자 성명', 'text', 'value="' + v('rep') + '"', true) + '</div>'
+  + '<div class="grid2">' + fieldHTML('f-addr', '사업장 주소', 'text', 'value="' + v('addr') + '"') + fieldHTML('f-tel', '사업장 전화', 'tel', 'value="' + v('tel') + '"') + '</div>'
+  + '<h3>근로자</h3><div class="grid3">' + fieldHTML('f-wn', '성명', 'text', 'value="' + v('wn') + '"', true) + fieldHTML('f-wtel', '연락처', 'tel', 'value="' + v('wtel') + '"') + fieldHTML('f-waddr', '주소', 'text', 'value="' + v('waddr') + '"') + '</div>'
+  + '<h3>계약기간</h3><div class="grid3">' + fieldHTML('f-start', '근로개시일', 'date', 'value="' + v('start') + '"', true)
+  + '<div class="field"><label for="f-fixed">기간의 정함</label><select id="f-fixed"><option value="0"' + (d.fixed ? '' : ' selected') + '>없음 (정규)</option><option value="1"' + (d.fixed ? ' selected' : '') + '>있음 (종료일 지정)</option></select></div>'
+  + fieldHTML('f-end', '계약 종료일', 'date', 'value="' + v('end') + '"') + '</div>'
+  + '<div class="grid3"><div class="field"><label for="f-prob">수습기간</label><select id="f-prob"><option value="0"' + (d.prob ? '' : ' selected') + '>없음</option><option value="1"' + (d.prob ? ' selected' : '') + '>있음</option></select></div>'
+  + fieldHTML('f-probm', '수습 개월 수', 'number', 'min="1" max="12" value="' + esc(d.prob ? d.prob.m : 3) + '"') + fieldHTML('f-probp', '수습 중 임금 (%)', 'number', 'min="1" max="100" value="' + esc(d.prob && d.prob.p ? d.prob.p : '') + '" placeholder="예: 90"') + '</div>'
+  + '<h3>근무</h3><div class="grid2">' + fieldHTML('f-place', '근무장소', 'text', 'value="' + v('place') + '"', true) + fieldHTML('f-job', '업무의 내용', 'text', 'value="' + v('job') + '" placeholder="예: 매장 판매 및 재고 관리"', true) + '</div>'
+  + '<div class="field"><label>근무일 <b>*</b></label><div class="days">' + DAY_NAMES.map(function(n, i){ return '<label><input type="checkbox" id="f-d' + i + '"' + (days[i] ? ' checked' : '') + '> ' + n + '</label>'; }).join('') + '</div></div>'
+  + '<div class="grid4">' + fieldHTML('f-t1', '근무 시작', 'time', 'value="' + v('t1', '09:00') + '"', true) + fieldHTML('f-t2', '근무 종료', 'time', 'value="' + v('t2', '18:00') + '"', true) + fieldHTML('f-b1', '휴게 시작', 'time', 'value="' + v('b1', '12:00') + '"') + fieldHTML('f-b2', '휴게 종료', 'time', 'value="' + v('b2', '13:00') + '"') + '</div>'
+  + '<div class="grid3"><div class="field"><label for="f-off">주휴일</label><select id="f-off">' + DAY_NAMES.map(function(n){ return '<option value="' + n + '"' + ((d.off || '일') === n ? ' selected' : '') + '>' + n + '요일</option>'; }).join('') + '</select></div></div>'
+  + '<h3>임금</h3><div class="grid3"><div class="field"><label for="f-paytype">구분 <b>*</b></label><select id="f-paytype"><option value="month"' + ((d.payType || 'month') === 'month' ? ' selected' : '') + '>월급</option><option value="hour"' + (d.payType === 'hour' ? ' selected' : '') + '>시급</option><option value="day"' + (d.payType === 'day' ? ' selected' : '') + '>일급</option></select></div>'
+  + fieldHTML('f-pay', '금액 (원)', 'number', 'min="0" step="1" inputmode="numeric" value="' + v('pay') + '"', true) + fieldHTML('f-payday', '임금지급일', 'text', 'value="' + v('payday', '매월 25일') + '" placeholder="예: 매월 25일"', true) + '</div>'
+  + '<div id="wage-note"></div>'
+  + '<div class="grid3"><div class="field"><label for="f-paymethod">지급방법</label><select id="f-paymethod"><option value="bank"' + ((d.payMethod || 'bank') === 'bank' ? ' selected' : '') + '>근로자 명의 예금통장에 입금</option><option value="cash"' + (d.payMethod === 'cash' ? ' selected' : '') + '>근로자에게 직접 지급</option></select></div>'
+  + fieldHTML('f-bonus', '상여금 (없으면 비워 두세요)', 'text', 'value="' + v('bonus') + '" placeholder="예: 연 100만원"') + fieldHTML('f-extra', '기타급여·제수당 (없으면 비워 두세요)', 'text', 'value="' + v('extra') + '" placeholder="예: 식대 월 20만원"') + '</div>'
+  + '<h3>사회보험 적용</h3><div class="days"><label><input type="checkbox" id="f-ins-go"' + (ins.go ? ' checked' : '') + '> 고용보험</label><label><input type="checkbox" id="f-ins-san"' + (ins.san ? ' checked' : '') + '> 산재보험</label><label><input type="checkbox" id="f-ins-kuk"' + (ins.kuk ? ' checked' : '') + '> 국민연금</label><label><input type="checkbox" id="f-ins-gun"' + (ins.gun ? ' checked' : '') + '> 건강보험</label></div>'
+  + '<h3>기타</h3><div class="field"><label for="f-etc">특약사항 (선택)</label><textarea id="f-etc" placeholder="예: 근무시간은 매장 사정에 따라 주 단위로 조정할 수 있으며, 변경 시 1주 전에 통보한다.">' + v('etc') + '</textarea></div>'
+  + '<div class="grid3">' + fieldHTML('f-date', '계약일자', 'date', 'value="' + v('date', todayISO()) + '"', true) + '</div>'
+  + '<div class="field"><label>사업주 서명 (선택 · 비워 두면 서명란이 빈 채로 발행됩니다)</label><div class="pad" id="f-esig"></div></div>'
+  + '<div id="f-errors"></div>'
+  + '<div class="row end"><button class="btn" type="button" id="f-reset">입력 초기화</button><button class="btn primary" type="submit" id="f-submit">링크 만들기</button></div>'
+  + '</form></section>';
+  html += '<section class="card"><details open><summary>미리보기</summary><div id="preview" style="margin-top:12px"></div></details></section>';
+  app.innerHTML = shell(html);
+  activePad = mountPad($('#f-esig'), decStrokes(d.es), schedule);
+  var form = $('#f');
+  var timer = null;
+  function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ var pv = $('#preview'); if (!pv || !$('#f')) return; var c = readForm(); ss.set('ngk:draft', c); pv.innerHTML = renderSheet(c, {id:'sheet-preview'}); wageNote(c); }, 160); }
+  form.addEventListener('input', schedule);
+  form.addEventListener('change', schedule);
+  form.addEventListener('submit', function(e){ e.preventDefault(); doCreate(); });
+  $('#f-reset').addEventListener('click', function(){ ss.del('ngk:draft'); viewNew(); });
+  schedule();
+}
+function wageNote(c){
+  var el = $('#wage-note'); if (!el) return;
+  if (c.payType === 'hour' && c.pay && c.pay < MIN_WAGE.hourly) el.innerHTML = '<div class="notice warn">입력한 시급이 ' + MIN_WAGE.year + '년 최저임금(시급 ' + MIN_WAGE.hourly.toLocaleString('ko-KR') + '원)보다 낮습니다. 금액을 확인해 주세요.</div>';
+  else el.innerHTML = '';
+}
+function readForm(){
+  var g = function(id){ var el = $('#' + id); return el ? el.value.trim() : ''; };
+  var ck = function(id){ var el = $('#' + id); return !!(el && el.checked); };
+  var days = DAY_NAMES.map(function(_, i){ return ck('f-d' + i) ? 1 : 0; });
+  var prob = g('f-prob') === '1' ? {m: g('f-probm') || '3', p: g('f-probp')} : null;
+  var c = {
+    co:g('f-co'), rep:g('f-rep'), addr:g('f-addr'), tel:g('f-tel'),
+    wn:g('f-wn'), wtel:g('f-wtel'), waddr:g('f-waddr'),
+    start:g('f-start'), fixed:g('f-fixed') === '1', end:g('f-end'), prob:prob,
+    place:g('f-place'), job:g('f-job'), days:days, off:g('f-off') || '일',
+    t1:g('f-t1'), t2:g('f-t2'), b1:g('f-b1'), b2:g('f-b2'),
+    payType:g('f-paytype') || 'month', pay:Number(g('f-pay')) || 0, payday:g('f-payday'), payMethod:g('f-paymethod') || 'bank',
+    bonus:g('f-bonus'), extra:g('f-extra'),
+    ins:{go:ck('f-ins-go'), san:ck('f-ins-san'), kuk:ck('f-ins-kuk'), gun:ck('f-ins-gun')},
+    etc:g('f-etc'), date:g('f-date') || todayISO(),
+    es: activePad && !activePad.isEmpty() ? encStrokes(activePad.get()) : ''
+  };
+  Object.keys(c).forEach(function(k){ if (c[k] === '' || c[k] === null || c[k] === false) delete c[k]; });
+  return c;
+}
+function validate(c){
+  var e = [];
+  if (!c.co) e.push('사업체명');
+  if (!c.rep) e.push('대표자 성명');
+  if (!c.wn) e.push('근로자 성명');
+  if (!c.start) e.push('근로개시일');
+  if (c.fixed && !c.end) e.push('계약 종료일');
+  if (c.fixed && c.end && c.end < c.start) e.push('계약 종료일은 근로개시일 이후여야 합니다');
+  if (!c.place) e.push('근무장소');
+  if (!c.job) e.push('업무의 내용');
+  if (!(c.days || []).some(function(x){ return x; })) e.push('근무일 (최소 1일)');
+  if (!c.t1 || !c.t2) e.push('근무 시작·종료 시간');
+  if (!c.pay) e.push('임금 금액');
+  if (!c.payday) e.push('임금지급일');
+  if (!c.date) e.push('계약일자');
+  return e;
+}
+function doCreate(){
+  var c = readForm();
+  var errs = validate(c);
+  var box = $('#f-errors');
+  if (errs.length) { box.innerHTML = '<div class="notice err">다음 항목을 확인해 주세요.<ul>' + errs.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>'; box.scrollIntoView({block:'center'}); return; }
+  if (NATIVE && !publicUrl()) { box.innerHTML = '<div class="notice err">먼저 첫 화면에서 <b>근로자용 페이지 주소</b>를 설정해 주세요. 근로자에게 보낼 링크는 그 주소로 만들어집니다.</div>'; box.scrollIntoView({block:'center'}); return; }
+  box.innerHTML = '';
+  c.id = genId();
+  c.createdAt = Date.now();
+  if (c.es) c.esAt = c.createdAt;
+  setBusy(true, '링크 만드는 중…');
+  var made = serverOn() ? fsCreate(c.id, c).then(function(){ return c.id; }) : encodePayload(c);
+  made.then(function(p){
+    setBusy(false);
+    listUpsert({id:c.id, worker:c.wn, company:c.co, start:c.start, status:'pending', createdAt:c.createdAt, link:linkOf(p), p:p});
+    ss.del('ngk:draft');
+    flash = {kind:'ok', html:'<b>계약서 링크를 만들었습니다.</b> 아래 "카카오톡으로 보내기"를 누르거나 링크를 복사해 근로자에게 보내세요.'};
+    location.hash = p;
+  }, function(e){ setBusy(false); box.innerHTML = '<div class="notice err">링크를 만들지 못했습니다: ' + esc(serverOn() ? fsError(e) : (e && e.message || '')) + '</div>'; });
+}
+
+/* ---------- 계약서 화면 ---------- */
+function viewContract(c, payload){
+  if (activePad) { activePad.destroy(); activePad = null; }
+  var link = linkOf(payload);
+  var signed = !!c.ws;
+  var draft = !signed ? ss.get('ngk:sign:' + c.id) : null;
+  var fromMe = listGet().some(function(e){ return e.id === c.id; });
+  if (signed && fromMe) listUpsert({id:c.id, status:'signed', signedAt:c.wsAt, link:link, p:payload});
+  var statusChip = signed ? '<span class="chip signed">서명 완료</span>' : '<span class="chip pending">서명 대기</span>';
+  var html = takeFlash() + fileWarn();
+  html += '<div class="statusbar"><div class="info"><b>' + esc(c.wn) + '</b> · ' + esc(c.co) + ' · 발행 ' + esc(fmtDT(c.createdAt)) + '</div>' + statusChip + '</div>';
+  html += renderSheet(c);
+  if (signed) {
+    html += '<section class="card"><h2>서명이 완료된 계약서입니다</h2><p class="muted">근로자 ' + esc(c.wsName || c.wn) + ' · ' + esc(fmtDT(c.wsAt)) + ' 서명</p>'
+      + '<div class="row"><button class="btn primary" id="share" type="button">카카오톡으로 보내기</button><button class="btn" id="pdf-share" type="button">PDF 보내기</button><button class="btn" id="pdf" type="button">PDF 저장</button><button class="btn" id="print" type="button">인쇄</button></div>'
+      + '<hr class="sep"><div class="field"><label for="lnk">이 계약서 링크 (서명 포함)</label><div class="linkbox"><input type="text" id="lnk" readonly value="' + esc(link) + '"><button class="btn" id="lnk-copy" type="button">복사</button></div></div>'
+      + '<p class="muted small" style="margin-top:8px">사업주와 근로자 모두 이 링크나 PDF를 보관하세요. 근로기준법 제17조에 따라 사업주는 근로자에게 사본을 교부해야 하며, 근로자가 직접 PDF를 저장한 경우에도 사업주가 한 번 더 보내 두면 안전합니다.</p></section>';
+    html += channelCard(link, c, true);
+  } else {
+    html += '<section class="card"><h2>근로자 서명</h2><p class="muted">계약 내용을 확인한 뒤 성명을 입력하고 아래 칸에 손가락이나 마우스로 서명해 주세요.</p>'
+      + '<div class="stack"><div class="field"><label for="s-name">성명</label><input type="text" id="s-name" value="' + esc(draft && draft.name != null ? draft.name : c.wn) + '"></div>'
+      + '<div class="field"><label>서명</label><div class="pad" id="s-pad"></div></div>'
+      + '<label class="chk"><input type="checkbox" id="s-agree"' + (draft && draft.agree ? ' checked' : '') + '> 위 근로계약서의 내용을 확인하였으며, 이에 동의하고 서명합니다.</label>'
+      + '<div id="s-errors"></div>'
+      + '<div class="row"><button class="btn primary" id="s-done" type="button">서명 완료</button></div></div></section>';
+    html += '<section class="card"><h2>근로자에게 보내기</h2><div class="stack"><div class="row"><button class="btn primary" id="share" type="button">카카오톡으로 보내기</button><button class="btn" id="pdf" type="button">서명 전 PDF 저장</button><button class="btn" id="print" type="button">인쇄</button></div>'
+      + '<div class="field"><label for="lnk">링크 (직접 복사해 보내도 됩니다)</label><div class="linkbox"><input type="text" id="lnk" readonly value="' + esc(link) + '"><button class="btn" id="lnk-copy" type="button">복사</button></div></div>'
+      + '<p class="muted small">휴대폰에서는 "카카오톡으로 보내기"를 누르면 공유 메뉴에서 카카오톡을 고를 수 있고, PC에서는 링크가 복사되니 PC 카카오톡 대화창에 붙여넣으면 됩니다. 근로자가 서명을 마치면 <b>서명 완료 링크</b>나 <b>PDF</b>를 회신하게 됩니다.</p></div></section>';
+    html += channelCard(link, c, false);
+  }
+  app.innerHTML = shell(html);
+
+  if (!signed) {
+    var sdraft = draft || {};
+    var saveDraft = function(){ ss.set('ngk:sign:' + c.id, {name:$('#s-name').value, strokes:activePad ? activePad.get() : [], agree:$('#s-agree').checked}); };
+    activePad = mountPad($('#s-pad'), sdraft.strokes, saveDraft);
+    $('#s-name').addEventListener('input', saveDraft);
+    $('#s-agree').addEventListener('change', saveDraft);
+    $('#s-done').addEventListener('click', function(){
+      var name = $('#s-name').value.trim(), errs = [], box = $('#s-errors');
+      if (!name) errs.push('성명을 입력해 주세요.');
+      if (!activePad || activePad.isEmpty()) errs.push('서명란에 서명해 주세요.');
+      if (!$('#s-agree').checked) errs.push('내용 확인 및 동의에 체크해 주세요.');
+      if (errs.length) { box.innerHTML = '<div class="notice err">' + errs.map(esc).join('<br>') + '</div>'; return; }
+      var c2 = Object.assign({}, c, {ws:encStrokes(activePad.get()), wsName:name, wsAt:Date.now()});
+      setBusy(true, '서명 반영 중…');
+      var short = isShortId(payload);
+      var done = short ? fsSign(payload, {ws:c2.ws, n:name, t:c2.wsAt}).then(function(){ return payload; }) : encodePayload(c2);
+      done.then(function(p){
+        setBusy(false);
+        ss.del('ngk:sign:' + c.id);
+        flash = {kind:'ok', html:'<b>서명이 완료되었습니다.</b> ' + (short ? '사업주는 같은 링크를 다시 열면 서명 완료로 보입니다. 아래 <b>"카카오톡으로 보내기"</b>나 <b>"PDF 보내기"</b>로 알려 주면 더 빠릅니다.' : '아래 <b>"카카오톡으로 보내기"</b>(링크) 또는 <b>"PDF 보내기"</b>로 사업주에게 회신해 주세요.') + ' 본인 보관용으로도 PDF를 저장해 두세요.'};
+        if (short) { lastRoute = null; route(); } else location.hash = p;
+      }, function(e){ setBusy(false); box.innerHTML = '<div class="notice err">서명을 반영하지 못했습니다: ' + esc(short ? (e && e.status === 403 ? '이미 서명된 계약서이거나 서버가 요청을 거부했습니다. 페이지를 새로 고쳐 확인해 주세요.' : fsError(e)) : (e && e.message || '')) + '</div>'; });
+    });
+  }
+  var shareTitle = signed ? '근로계약서 (서명 완료)' : '근로계약서 서명 요청';
+  var shareText = signed ? c.co + ' · ' + (c.wsName || c.wn) + ' 근로계약서입니다. 서명이 완료되었습니다.' : c.co + ' 근로계약서입니다. 링크를 열어 내용을 확인하고 서명해 주세요.';
+  $('#share').addEventListener('click', function(){ shareLink(link, shareTitle, shareText, $('#lnk')); });
+  $('#lnk-copy').addEventListener('click', function(){ if (deadLink()) return; copyText(link, $('#lnk')).then(function(ok){ toast(ok ? '링크를 복사했습니다. 카카오톡 대화창에 붙여넣어 보내 주세요.' : '복사에 실패했습니다. 링크를 길게 눌러 직접 복사해 주세요.'); }); });
+  $('#pdf').addEventListener('click', function(){ makePDF(c, 'download'); });
+  $('#print').addEventListener('click', function(){ window.print(); });
+  var ps = $('#pdf-share'); if (ps) ps.addEventListener('click', function(){ makePDF(c, 'share'); });
+  var chl = $('#ch-link'); if (chl) chl.addEventListener('click', function(){ sendToChannel(link, $('#lnk')); });
+  var chp = $('#ch-pdf'); if (chp) chp.addEventListener('click', function(){ makePDF(c, 'share'); });
+}
+
+/* ---------- PDF ---------- */
+function makePDF(c, mode){
+  var btn = mode === 'share' ? ($('#pdf-share') || $('#ch-pdf')) : $('#pdf');
+  var label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'PDF 만드는 중…'; }
+  var wrap;
+  Promise.all([
+    window.html2canvas ? null : loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+    window.jspdf ? null : loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+  ]).then(function(){
+    wrap = document.createElement('div');
+    wrap.style.cssText = 'position:absolute;left:-20000px;top:0;width:794px;background:#fff;';
+    wrap.innerHTML = renderSheet(c, {print:true, id:'sheet-print'});
+    document.body.appendChild(wrap);
+    return (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function(){
+      return window.html2canvas(wrap.firstChild, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false});
+    });
+  }).then(function(canvas){
+    if (wrap) wrap.remove();
+    var jsPDF = window.jspdf.jsPDF, pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
+    var pw = 210, ph = 297, pageHpx = Math.floor(canvas.width * ph / pw), y = 0, first = true;
+    while (y < canvas.height) {
+      var h = Math.min(pageHpx, canvas.height - y);
+      var cv = document.createElement('canvas'); cv.width = canvas.width; cv.height = h;
+      cv.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+      if (!first) pdf.addPage();
+      pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pw, h * pw / canvas.width);
+      first = false; y += h;
+    }
+    var name = '근로계약서_' + (c.wn || '근로자') + '_' + (c.date || todayISO()) + (c.ws ? '_서명완료' : '') + '.pdf';
+    if (NATIVE) {
+      var b64 = pdf.output('datauristring').split(',')[1];
+      var r = NATIVE.savePdf(b64, name, mode === 'share');
+      if (typeof r === 'string' && r.indexOf('error') === 0) throw new Error(r.slice(6));
+      if (r === 'saved') toast('PDF를 다운로드 폴더에 저장했습니다: ' + name, 4000);
+      return;
+    }
+    var blob = pdf.output('blob');
+    if (mode === 'share') {
+      var file = new File([blob], name, {type:'application/pdf'});
+      if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) return navigator.share({files:[file], title:name}).catch(function(e){ if (e && e.name !== 'AbortError') throw e; });
+      toast('이 브라우저에서는 파일 공유가 되지 않아 PDF를 저장합니다. 저장한 파일을 카카오톡 대화창에 끌어다 놓거나 첨부해 보내 주세요.', 5000);
+    }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    if (mode !== 'share') toast('PDF를 저장했습니다. 저장이 안 보이면 브라우저 메뉴에서 "다른 브라우저로 열기"를 눌러 다시 시도해 보세요.', 4500);
+  }).catch(function(e){
+    if (wrap) wrap.remove();
+    toast('PDF를 만들지 못했습니다' + (e && e.message ? ': ' + e.message : '') + '.', 4500);
+  }).then(function(){ if (btn) { btn.disabled = false; btn.textContent = label; } });
+}
+
+/* ---------- 앱 설치 (PWA) ---------- */
+var installEvt = null;
+function isStandalone(){ try { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } }
+function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream; }
+function installCard(){
+  if (NATIVE || isStandalone() || isFileURL()) return '';
+  if (ls.get('ngk:install-dismissed')) return '';
+  var how;
+  if (installEvt) how = '<button class="btn primary" id="pwa-install" type="button">홈 화면에 앱으로 추가</button>';
+  else if (isIOS()) how = '<p class="muted">Safari 아래쪽 <b>공유</b> 버튼(네모에 화살표) → <b>홈 화면에 추가</b>를 누르세요.</p>';
+  else if (isMobile()) how = '<p class="muted">브라우저 메뉴(⋮) → <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누르세요. 카카오톡 안에서 열렸다면 오른쪽 위 메뉴 → <b>다른 브라우저로 열기</b>를 먼저 누르세요.</p>';
+  else how = '<p class="muted">주소창 오른쪽의 <b>설치</b> 아이콘을 누르면 바탕화면 앱으로 쓸 수 있습니다. 휴대폰에서는 브라우저 메뉴 → 홈 화면에 추가.</p>';
+  return '<section class="card install" id="install-card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">앱으로 설치하기</h2><button class="btn sm" id="pwa-dismiss" type="button">닫기</button></div><p class="muted small" style="margin-top:6px">홈 화면에 추가하면 아이콘으로 바로 열리고, 주소창 없이 앱처럼 쓸 수 있습니다. 근로자는 설치할 필요 없이 카카오톡 링크만 누르면 됩니다.</p>' + how + '</section>';
+}
+function wireInstall(){
+  var b = $('#pwa-install'); if (b) b.addEventListener('click', function(){ if (!installEvt) return; var ev = installEvt; installEvt = null; ev.prompt(); ev.userChoice.then(function(r){ if (r && r.outcome === 'accepted') { var c = $('#install-card'); if (c) c.remove(); toast('홈 화면에 추가했습니다.'); } else { var c2 = $('#install-card'); if (c2) c2.remove(); } }); });
+  var d = $('#pwa-dismiss'); if (d) d.addEventListener('click', function(){ ls.set('ngk:install-dismissed', 1); var c = $('#install-card'); if (c) c.remove(); });
+}
+window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); installEvt = e; var c = $('#install-card'); if (c) { c.outerHTML = installCard(); wireInstall(); } });
+window.addEventListener('appinstalled', function(){ var c = $('#install-card'); if (c) c.remove(); });
+if ('serviceWorker' in navigator && !NATIVE && location.protocol !== 'file:') {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      reg.addEventListener('updatefound', function(){ var nw = reg.installing; if (!nw) return; nw.addEventListener('statechange', function(){ if (nw.state === 'installed' && navigator.serviceWorker.controller) toast('새 버전이 준비되었습니다. 앱을 닫았다 다시 열면 적용됩니다.', 5000); }); });
+    }).catch(function(){});
+  });
+}
+
+/* ---------- 라우팅 ---------- */
+function route(ev){
+  var h = location.hash.replace(/^#/, '');
+  if (ev && h === lastRoute) return;
+  lastRoute = h;
+  window.scrollTo(0, 0);
+  var seq = ++renderSeq;
+  if (h === 'new') return viewNew();
+  if (isShortId(h)) {
+    if (!serverOn()) { app.innerHTML = shell('<section class="card"><h2>계약서를 열 수 없습니다</h2><p>이 링크는 서버 저장(짧은 링크) 방식으로 만든 계약서인데, 이 페이지에는 서버 설정이 없습니다. 링크를 만든 곳과 같은 주소에서 열어 주세요.</p><p><a href="#">처음으로</a></p></section>'); return; }
+    app.innerHTML = shell('<div class="muted">계약서를 여는 중…</div>');
+    fsGet(h).then(function(c){
+      if (seq !== renderSeq) return;
+      if (c) return viewContract(c, h);
+      app.innerHTML = shell('<section class="card"><h2>계약서를 찾을 수 없습니다</h2><p>링크가 정확한지 확인해 주세요.</p><p><a href="#">처음으로</a></p></section>');
+    }, function(e){ if (seq !== renderSeq) return; app.innerHTML = shell('<section class="card"><h2>계약서를 불러오지 못했습니다</h2><p>' + esc(fsError(e)) + '</p><p><a href="#">처음으로</a></p></section>'); });
+    return;
+  }
+  if (h.indexOf(P_ZIP) === 0 || h.indexOf(P_PLAIN) === 0) {
+    app.innerHTML = shell('<div class="muted">계약서를 여는 중…</div>');
+    decodePayload(h).then(function(c){
+      if (seq !== renderSeq) return;
+      if (c) return viewContract(c, payloadOf(h));
+      app.innerHTML = shell('<section class="card"><h2>계약서를 열 수 없습니다</h2><p>링크가 잘렸거나 손상되었습니다. 보낸 사람에게 링크 전체를 다시 받아 주세요. 카카오톡에서 링크가 길게 잘려 보이면, 링크를 길게 눌러 "복사"한 뒤 첫 화면의 "받은 링크 열기"에 붙여넣어도 됩니다.</p><p><a href="#">처음으로</a></p></section>');
+    });
+    return;
+  }
+  return viewHome();
+}
+window.addEventListener('hashchange', route);
+kakaoPreload();
+route();
+})();
+
+</script>
+</body>
+</html>

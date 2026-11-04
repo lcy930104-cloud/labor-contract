@@ -1,0 +1,9 @@
+# 서명 키는 공개 저장소에 올리지 않습니다 (GitHub 비밀값 KEYSTORE_BASE64 로 넣습니다)
+keystore/release.jks
+keystore/release.jks.base64.txt
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
