@@ -17,7 +17,7 @@
    - Name: `KEYSTORE_BASE64`, Secret: 같이 받은 `keystore/release.jks.base64.txt` 파일 내용 전체
    - (선택) Name: `KEYSTORE_PASSWORD`, Secret: 키 비밀번호 (기본값 `samgang-contract`)
    - 등록하지 않아도 APK 는 만들어지지만, 빌드할 때마다 키가 바뀌어 업데이트 설치 전에 앱을 지워야 합니다.
-3. **APK 받기**: Actions 탭 → "APK 만들기" → 가장 최근 실행 → 아래 Artifacts 의 `근로계약서-apk`, 또는 Releases 탭의 `근로계약서.apk`.
+3. **APK 받기**: Actions 탭 → "APK 만들기" → 가장 최근 실행 → 아래 Artifacts 의 `근로계약서-apk`, 또는 Releases 탭의 `labor-contract.apk`.
    휴대폰 브라우저로 Releases 페이지를 열어 내려받으면 바로 설치할 수 있습니다 ("출처를 알 수 없는 앱" 허용).
 
 ## 사용 흐름
